@@ -1,7 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
+
+
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import RecognizePage from './pages/RecognizePage';
