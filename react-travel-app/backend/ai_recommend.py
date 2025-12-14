@@ -20,7 +20,9 @@ print("[AI_RECOMMEND] OpenAI client initialized successfully")
 def loadDestination():
    
     destinations = []
-    with open("database.json", "r", encoding = "utf-8") as f:
+    # Fix path to find database.json in backend folder
+    db_path = os.path.join(os.path.dirname(__file__), 'database.json')
+    with open(db_path, "r", encoding = "utf-8") as f:
         data = json.load(f)
     
     for destination in data:
