@@ -4,7 +4,7 @@ from datetime import datetime
 import base64
 import json
 import os
-ALBUM_FILE = "Users_album.json"
+ALBUM_FILE = os.path.join(os.path.dirname(__file__), 'Users_album.json')
 def loadUserAlbum(username):
     if not os.path.exists(ALBUM_FILE):
         return {}
@@ -73,9 +73,10 @@ def saveUserAlbums(username, user_albums):
 
 
 def loadUser():
-    if not os.path.exists("Users.json"):
+    users_file = os.path.join(os.path.dirname(__file__), 'Users.json')
+    if not os.path.exists(users_file):
         return {"users" : []}
-    with open("Users.json", "r", encoding = "utf-8") as f:
+    with open(users_file, "r", encoding = "utf-8") as f:
         try:
             return json.load(f)
         except json.JSONDecodeError:
@@ -83,7 +84,8 @@ def loadUser():
     
 #Lưu thông tin người dùng
 def saveUser(data):
-    with open("Users.json", "w", encoding = "utf-8") as f:
+    users_file = os.path.join(os.path.dirname(__file__), 'Users.json')
+    with open(users_file, "w", encoding = "utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=4)
 #Giao diên phần đăng nhập
 def screen_signupform():

@@ -7,10 +7,19 @@ from typing import List, Dict, Optional
 import json
 import os
 
+"""
+Social Feed Module - Quản lý posts, comments, likes cho chức năng mạng xã hội
+"""
+
+from datetime import datetime
+from typing import List, Dict, Optional
+import json
+import os
+
 # File lưu trữ posts và comments
-POSTS_FILE = "social_posts.json"
-COMMENTS_FILE = "social_comments.json"
-LIKES_FILE = "social_likes.json"
+POSTS_FILE = os.path.join(os.path.dirname(__file__), 'social_posts.json')
+COMMENTS_FILE = os.path.join(os.path.dirname(__file__), 'social_comments.json')
+LIKES_FILE = os.path.join(os.path.dirname(__file__), 'social_likes.json')
 
 class SocialFeedManager:
     def __init__(self):
