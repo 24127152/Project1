@@ -41,7 +41,9 @@ def load_landmarks_database():
     try:
         import json
         import unidecode
-        with open("database.json", "r", encoding="utf-8") as f:
+        import os
+        db_path = os.path.join(os.path.dirname(__file__), 'database.json')
+        with open(db_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         
         # Tạo dictionary để tra cứu nhanh
@@ -159,7 +161,9 @@ def get_landmark_from_image(image_pil):
     landmark_names = []
     try:
         import json
-        with open("database.json", "r", encoding="utf-8") as f:
+        import os
+        db_path = os.path.join(os.path.dirname(__file__), 'database.json')
+        with open(db_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             landmark_names = [item.get("name", "") for item in data if item.get("name")]
     except:
@@ -202,7 +206,9 @@ def get_landmark_with_confidence(image_pil):
     landmark_names = []
     try:
         import json
-        with open("database.json", "r", encoding="utf-8") as f:
+        import os
+        db_path = os.path.join(os.path.dirname(__file__), 'database.json')
+        with open(db_path, "r", encoding="utf-8") as f:
             data = json.load(f)
             landmark_names = [item.get("name", "") for item in data if item.get("name")]
     except:
