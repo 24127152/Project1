@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Vietnam travel web application",
   "scripts": {
-    "start": "python -m http.server 3000"
+    "start": "python -m http.server 3000",
+    "build": "react-scripts build"
   }
 }
