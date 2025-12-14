@@ -14,11 +14,10 @@ import sys
 import hashlib
 import jwt
 
-# Add backend folder to path so we can import modules from there
+# Add backend folder to path
 backend_path = os.path.join(os.path.dirname(__file__), 'backend')
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
-
 # Import our modules
 try:
     from recognize import (
@@ -34,11 +33,8 @@ try:
     from chatbot import TravelChatbot, chatbot_instance
     from concurrent_login import login_manager
     from social_feed import social_feed_manager
-    MODULES_AVAILABLE = True
-except Exception as e:
-    print(f"[BACKEND] Import warning: {e}")
-    print("[BACKEND] Using fallback implementations")
-    MODULES_AVAILABLE = False
+except ImportError as e:
+    print(f"Import error: {e}")
     # Fallback if modules not available
     def analyze_image(*args, **kwargs):
         return "Module not available"
@@ -693,21 +689,11 @@ async def recommend_by_interest_api(request: InterestRequest):
 async def ai_recommend_api(request: InterestRequest):
     """Gợi ý địa điểm bằng AI."""
     try:
-        if not MODULES_AVAILABLE:
-            return {
-                "success": False,
-                "message": "AI module not available on this server",
-                "recommendation": f"Searching for {request.interest} destinations..."
-            }
         destinations = loadDestination()
         result = ai_recommend(request.interest, destinations)
         return {"success": True, "recommendation": result}
     except Exception as e:
-        return {
-            "success": False,
-            "message": str(e),
-            "recommendation": f"Could not get AI recommendation: {str(e)}"
-        }
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/recommend/nearby")
 async def recommend_nearby(request: LocationRequest):
