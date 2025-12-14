@@ -1,5 +1,5 @@
-import streamlit as st
-import streamlit_authenticator as stauth
+# import streamlit as st  # Not needed for FastAPI
+# import streamlit_authenticator as stauth  # Not needed for FastAPI
 from datetime import datetime
 import base64
 import json

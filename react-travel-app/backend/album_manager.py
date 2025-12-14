@@ -4,7 +4,7 @@ from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED
 from PIL import Image, ImageDraw, ImageFont
 import textwrap
-import streamlit as st
+# import streamlit as st  # Not needed for FastAPI
 
 def zip_album(album_name, items):
     """Tạo file ZIP chứa tất cả ảnh trong album."""
