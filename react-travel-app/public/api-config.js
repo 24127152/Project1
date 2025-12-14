@@ -1,6 +1,6 @@
 // API Configuration
 // Change BACKEND_URL to your Render backend URL
-const BACKEND_URL = 'https://vietnam-travel-backend.onrender.com'; // Update this after deploying on Render
+const BACKEND_URL = 'https://project1-1-4ran.onrender.com'; // Render backend URL
 
 // Or use relative path if backend is on same domain
 // const BACKEND_URL = '';

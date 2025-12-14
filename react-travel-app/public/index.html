@@ -421,7 +421,8 @@
         // Load popular destinations from API (random high-rated destinations)
         async function loadPopularDestinations() {
             try {
-                const response = await fetch('/api/destinations/random?count=4');
+                const BACKEND_URL = 'https://project1-1-4ran.onrender.com';
+                const response = await fetch(`${BACKEND_URL}/api/destinations/random?count=4`);
                 const data = await response.json();
                 
                 if (data.success && data.destinations) {

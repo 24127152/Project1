@@ -1,5 +1,5 @@
-// API Configuration
-const API_BASE_URL = 'http://192.168.1.6.150:8000';
+// API Configuration - use the config from api-config.js if available
+const API_BASE_URL = (typeof BACKEND_URL !== 'undefined' && BACKEND_URL) ? BACKEND_URL : 'https://project1-1-4ran.onrender.com';
 
 // Global variables
 let currentAlbums = [];
