@@ -1,14 +1,17 @@
-
-
-
-
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import './index.css';
+import './App.css';
+import Navbar from './components/Navbar';
+import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import RecognizePage from './pages/RecognizePage';
 import RecommendPage from './pages/RecommendPage';
 import AlbumsPage from './pages/AlbumsPage';
-
-
 
 function App() {
   return (
@@ -17,7 +20,7 @@ function App() {
         <Navbar />
         <main>
           <Routes>
-            
+            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/signup" element={<SignupPage />} />
             <Route path="/recognize" element={<RecognizePage />} />
@@ -44,3 +47,10 @@ function App() {
 }
 
 export default App;
+
+const root = ReactDOM.createRoot(document.getElementById('root'));
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);

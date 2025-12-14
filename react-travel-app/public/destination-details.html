@@ -314,7 +314,7 @@
 
             try {
                 if (isFavorited) {
-                    const response = await fetch(`http://192.168.1.6:8000/api/favorites/${encodeURIComponent(dest.name)}`, {
+                    const response = await fetch(`/api/favorites/${encodeURIComponent(dest.name)}`, {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -325,7 +325,7 @@
                         button.classList.remove('bg-red-50');
                     }
                 } else {
-                    const response = await fetch(`http://192.168.1.6:8000/api/favorites/${encodeURIComponent(dest.name)}`, {
+                    const response = await fetch(`/api/favorites/${encodeURIComponent(dest.name)}`, {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -348,7 +348,7 @@
             if (!token) return;
 
             try {
-                const response = await fetch('http://192.168.1.6:8000/api/favorites', {
+                const response = await fetch('/api/favorites', {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();

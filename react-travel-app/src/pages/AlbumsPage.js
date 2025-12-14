@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { toast } from 'react-toastify';
-import { Plus, Trash2, Image as ImageIcon, Edit2, Search } from 'lucide-react';
+import { Plus, Trash2, Image as ImageIcon, Search } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import api from '../api';
 
@@ -268,7 +268,7 @@ const AlbumsPage = () => {
                       <div key={index} className="relative group">
                         <img
                           src={image}
-                          alt={`Album image ${index}`}
+                          alt={`${index + 1}`}
                           className="w-full h-48 object-cover rounded-lg"
                         />
                         <button

@@ -348,7 +348,7 @@
                 let locationData = { location: 'Không rõ', description: '' };
                 
                 try {
-                    const landmarkResponse = await fetch('http://192.168.1.6:8000/api/recognize/landmark', {
+                    const landmarkResponse = await fetch('/api/recognize/landmark', {
                         method: 'POST',
                         body: formData
                     });
@@ -364,7 +364,7 @@
                 }
 
                 try {
-                    const locationResponse = await fetch('http://192.168.1.6:8000/api/recognize/location', {
+                    const locationResponse = await fetch('/api/recognize/location', {
                         method: 'POST',
                         body: formData
                     });
@@ -470,7 +470,7 @@
             }
 
             try {
-                const response = await fetch('http://192.168.1.6:8000/api/recommend/interest', {
+                const response = await fetch('/api/recommend/interest', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

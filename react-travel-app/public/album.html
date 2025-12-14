@@ -532,7 +532,7 @@
                     return;
                 }
                 
-                const createResponse = await fetch('http://192.168.1.6:8000/api/albums', {
+                const createResponse = await fetch('/api/albums', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -560,7 +560,7 @@
 
                     try {
                         const encodedAlbumName = encodeURIComponent(albumName);
-                        const response = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images`, {
+                        const response = await fetch(`/api/albums/${encodedAlbumName}/images`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`
@@ -608,7 +608,7 @@
                 document.getElementById('empty-albums').classList.add('hidden');
                 document.getElementById('album-stats').classList.add('hidden');
 
-                const response = await fetch('http://192.168.1.6:8000/api/albums', {
+                const response = await fetch('/api/albums', {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -620,7 +620,7 @@
                     displayAlbums(data.albums);
                     
                     // Get and display statistics
-                    const statsResponse = await fetch('http://192.168.1.6:8000/api/albums/stats', {
+                    const statsResponse = await fetch('/api/albums/stats', {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -715,7 +715,7 @@
             try {
                 const token = localStorage.getItem('authToken');
                 const encodedAlbumName = encodeURIComponent(albumName);
-                const response = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images`, {
+                const response = await fetch(`/api/albums/${encodedAlbumName}/images`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -768,7 +768,7 @@
                         const escapedFilename = image.filename.replace(/'/g, "\\''").replace(/"/g, '&quot;');
                         const encodedAlbumName = encodeURIComponent(currentAlbumName);
                         const encodedFilename = encodeURIComponent(image.filename);
-                        const imageUrl = `http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images/${encodedFilename}/view?token=${token}`;
+                        const imageUrl = `/api/albums/${encodedAlbumName}/images/${encodedFilename}/view?token=${token}`;
                         return `
                         <div class="relative group">
                             <div class="w-full h-32 bg-gray-200 rounded-lg overflow-hidden cursor-pointer" onclick="viewImageFullsize('${escapedFilename}', '${currentAlbumName.replace(/'/g, "\\'")}')">
@@ -828,7 +828,7 @@
                             const token = localStorage.getItem('authToken');
                             const encodedAlbumName = encodeURIComponent(currentAlbumName);
                             const encodedFilename = encodeURIComponent(image.filename);
-                            const imageUrl = `http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images/${encodedFilename}/view?token=${token}`;
+                            const imageUrl = `/api/albums/${encodedAlbumName}/images/${encodedFilename}/view?token=${token}`;
                             return `
                             <div class="relative group">
                                 <div class="w-full h-32 bg-gray-200 rounded-lg flex items-center justify-center overflow-hidden cursor-pointer" onclick="viewImageFullsize('${escapedFilename}', '${currentAlbumName.replace(/'/g, "\\'")}')">
@@ -885,7 +885,7 @@
                 const encodedAlbumName = encodeURIComponent(albumName);
                 const encodedFilename = encodeURIComponent(filename);
                 
-                const response = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images/${encodedFilename}`, {
+                const response = await fetch(`/api/albums/${encodedAlbumName}/images/${encodedFilename}`, {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -922,7 +922,7 @@
             try {
                 const token = localStorage.getItem('authToken');
                 const encodedAlbumName = encodeURIComponent(albumName);
-                const response = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}/download`, {
+                const response = await fetch(`/api/albums/${encodedAlbumName}/download`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -958,7 +958,7 @@
                     const token = localStorage.getItem('authToken');
                     // Encode album name properly for URL
                     const encodedAlbumName = encodeURIComponent(albumName);
-                    const response = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}`, {
+                    const response = await fetch(`/api/albums/${encodedAlbumName}`, {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -1124,7 +1124,7 @@
 
                     try {
                         const encodedAlbumName = encodeURIComponent(addImagesToAlbumName);
-                        const response = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images`, {
+                        const response = await fetch(`/api/albums/${encodedAlbumName}/images`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`
@@ -1239,7 +1239,7 @@
                     updateProgress(0, 2, 'Creating album for scanned image...');
                     
                     // Create album
-                    const createResponse = await fetch('http://192.168.1.6:8000/api/albums', {
+                    const createResponse = await fetch('/api/albums', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1270,7 +1270,7 @@
                     console.log('[SCAN TO ALBUM] Uploading to album:', albumName);
                     console.log('[SCAN TO ALBUM] Encoded album name:', encodedAlbumName);
                     
-                    const uploadResponse = await fetch(`http://192.168.1.6:8000/api/albums/${encodedAlbumName}/images`, {
+                    const uploadResponse = await fetch(`/api/albums/${encodedAlbumName}/images`, {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`

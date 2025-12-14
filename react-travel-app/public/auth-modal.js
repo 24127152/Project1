@@ -407,7 +407,7 @@ async function handleForgotPasswordSubmit(e) {
     if (forgotPasswordStep === 1) {
         // Step 1: Request reset code
         try {
-            const response = await fetch('http://192.168.1.6:8000/api/forgot-password', {
+            const response = await fetch('/api/forgot-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -450,7 +450,7 @@ async function handleForgotPasswordSubmit(e) {
         }
 
         try {
-            const response = await fetch('http://192.168.1.6:8000/api/reset-password', {
+            const response = await fetch('/api/reset-password', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, reset_code: resetCode, new_password: newPassword })
@@ -484,7 +484,7 @@ async function handleLoginSubmit(e) {
     console.log('🔍 Login attempt:', { email, passwordLength: password.length });
 
     try {
-        const response = await fetch('http://192.168.1.6:8000/api/login', {
+        const response = await fetch('/api/login', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -529,7 +529,7 @@ async function handleSignupSubmit(e) {
     }
 
     try {
-        const response = await fetch('http://192.168.1.6:8000/api/register', {
+        const response = await fetch('/api/register', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fullname, email, phone, password })
