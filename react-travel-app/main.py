@@ -34,8 +34,11 @@ try:
     from chatbot import TravelChatbot, chatbot_instance
     from concurrent_login import login_manager
     from social_feed import social_feed_manager
-except ImportError as e:
-    print(f"Import error: {e}")
+    MODULES_AVAILABLE = True
+except Exception as e:
+    print(f"[BACKEND] Import warning: {e}")
+    print("[BACKEND] Using fallback implementations")
+    MODULES_AVAILABLE = False
     # Fallback if modules not available
     def analyze_image(*args, **kwargs):
         return "Module not available"
@@ -690,11 +693,21 @@ async def recommend_by_interest_api(request: InterestRequest):
 async def ai_recommend_api(request: InterestRequest):
     """Gợi ý địa điểm bằng AI."""
     try:
+        if not MODULES_AVAILABLE:
+            return {
+                "success": False,
+                "message": "AI module not available on this server",
+                "recommendation": f"Searching for {request.interest} destinations..."
+            }
         destinations = loadDestination()
         result = ai_recommend(request.interest, destinations)
         return {"success": True, "recommendation": result}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        return {
+            "success": False,
+            "message": str(e),
+            "recommendation": f"Could not get AI recommendation: {str(e)}"
+        }
 
 @app.post("/api/recommend/nearby")
 async def recommend_nearby(request: LocationRequest):
