@@ -19,3 +19,8 @@ __pycache__/
 # node_modules/
 # build/
 # dist/
+# Bỏ qua thư mục node_modules chứa các thư viện đã cài đặt
+node_modules/
+
+# Bỏ qua thư mục Build đầu ra
+/build
