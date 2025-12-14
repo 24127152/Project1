@@ -11,7 +11,7 @@ import RecognizePage from './pages/RecognizePage';
 import RecommendPage from './pages/RecommendPage';
 import AlbumsPage from './pages/AlbumsPage';
 
-import './index.css';
+
 
 function App() {
   return (
