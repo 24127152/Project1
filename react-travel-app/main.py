@@ -10,8 +10,14 @@ import base64
 from datetime import datetime, timedelta
 from PIL import Image
 import os
+import sys
 import hashlib
 import jwt
+
+# Add backend folder to path so we can import modules from there
+backend_path = os.path.join(os.path.dirname(__file__), 'backend')
+if backend_path not in sys.path:
+    sys.path.insert(0, backend_path)
 
 # Import our modules
 try:
