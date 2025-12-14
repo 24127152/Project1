@@ -1,0 +1,21 @@
+ECHO is on.
+# ---------------------------------
+# 1. Các Tệp Chứa Khóa Bí mật (.env files)
+# ---------------------------------
+.env
+.env.local
+react-travel-app/backend/.env.example 
+# Nếu bạn đã đưa key thật vào tệp này
+
+# ---------------------------------
+# 2. Các Tệp Cache và Output (Python)
+# ---------------------------------
+__pycache__/
+*.pyc
+
+# ---------------------------------
+# 3. Các Tệp Phát sinh khác (nếu có)
+# ---------------------------------
+# node_modules/
+# build/
+# dist/
