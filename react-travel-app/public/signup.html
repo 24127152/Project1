@@ -423,7 +423,7 @@
 
             try {
                 // API call to backend
-                const response = await fetch('/api/register', {
+                const response = await fetch(apiUrl('/api/register'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -460,6 +460,7 @@
         });
     </script>
     <script src="translations.js"></script>
+    <script src="api-config.js"></script>
     <script src="auth-modal.js"></script>
     <script src="avatar-manager.js"></script>
 </body>

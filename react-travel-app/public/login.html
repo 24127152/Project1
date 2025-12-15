@@ -345,7 +345,7 @@
 
             try {
                 // API call to backend
-                const response = await fetch('/api/login', {
+                const response = await fetch(apiUrl('/api/login'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -380,6 +380,7 @@
         });
     </script>
     <script src="translations.js"></script>
+    <script src="api-config.js"></script>
     <script src="auth-modal.js"></script>
     <script src="avatar-manager.js"></script>
 </body>

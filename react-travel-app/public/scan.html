@@ -348,7 +348,7 @@
                 let locationData = { location: 'Không rõ', description: '' };
                 
                 try {
-                    const landmarkResponse = await fetch('/api/recognize/landmark', {
+                    const landmarkResponse = await fetch(apiUrl('/api/recognize/landmark'), {
                         method: 'POST',
                         body: formData
                     });
@@ -364,7 +364,7 @@
                 }
 
                 try {
-                    const locationResponse = await fetch('/api/recognize/location', {
+                    const locationResponse = await fetch(apiUrl('/api/recognize/location'), {
                         method: 'POST',
                         body: formData
                     });
@@ -470,7 +470,7 @@
             }
 
             try {
-                const response = await fetch('/api/recommend/interest', {
+                const response = await fetch(apiUrl('/api/recommend/interest'), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -584,6 +584,7 @@ Discovered using Vietnam UrbanQuest - AI-powered travel companion!`;
         });
     </script>
     <script src="translations.js"></script>
+    <script src="api-config.js"></script>
     <script src="auth-modal.js"></script>
     <script src="avatar-manager.js"></script>
 </body>
