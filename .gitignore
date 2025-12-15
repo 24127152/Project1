@@ -24,3 +24,5 @@ node_modules/
 
 # Bỏ qua thư mục Build đầu ra
 /build
+.vercel
+.env*.local

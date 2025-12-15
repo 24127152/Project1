@@ -184,7 +184,7 @@
                     </div>
                     <a href="about-us.html" class="hover:text-blue-200 transition" data-i18n="about">About us</a>
                     <a href="information.html" class="hover:text-blue-200 transition" data-i18n="information">Information</a>
-                    <a href="#contact" class="hover:text-blue-200 transition">Contact us</a>
+                    <a href="#contact" class="hover:text-blue-200 transition" data-i18n="contact">Contact us</a>
                 </div>
             </div>
             
@@ -200,7 +200,7 @@
                     <a href="recommendation.html" class="hover:text-blue-200 py-2 border-b-2 border-transparent hover:border-white transition-all" data-i18n="recommendation">Recommendation</a>
                     <a href="scan.html" class="hover:text-blue-200 py-2 border-b-2 border-transparent hover:border-white transition-all" data-i18n="scan">Scan</a>
                     <a href="album.html" class="hover:text-blue-200 py-2 border-b-2 border-transparent hover:border-white transition-all" data-i18n="album">Album</a>
-                    <a href="social.html" class="hover:text-blue-200 py-2 border-b-2 border-transparent hover:border-white transition-all">Social</a>
+                    <a href="social.html" class="hover:text-blue-200 py-2 border-b-2 border-transparent hover:border-white transition-all" data-i18n="social_page_title">Social</a>
                     
                     <!-- User Menu -->
                     <div class="relative group">
@@ -319,7 +319,7 @@
     <!-- Popular Destinations -->
     <div class="bg-white py-16">
         <div class="max-w-7xl mx-auto px-4">
-            <h2 class="text-4xl font-bold text-center mb-12 ">Popular Destinations</h2>
+            <h2 class="text-4xl font-bold text-center mb-12 " data-i18n="popular_places">Popular Destinations</h2>
             
             <div id="popular-destinations" class="grid md:grid-cols-4 gap-6">
                 <!-- Popular destinations will be loaded here -->
@@ -421,7 +421,7 @@
         // Load popular destinations from API (random high-rated destinations)
         async function loadPopularDestinations() {
             try {
-                const BACKEND_URL = 'https://project1-1-4ran.onrender.com';
+                const BACKEND_URL = 'https://project1-9-xejo.onrender.com';
                 const response = await fetch(`${BACKEND_URL}/api/destinations/random?count=4`);
                 const data = await response.json();
                 

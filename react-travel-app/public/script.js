@@ -1,5 +1,5 @@
 // API Configuration - use the config from api-config.js if available
-const API_BASE_URL = (typeof BACKEND_URL !== 'undefined' && BACKEND_URL) ? BACKEND_URL : 'https://project1-1-4ran.onrender.com';
+const API_BASE_URL = (typeof BACKEND_URL !== 'undefined' && BACKEND_URL) ? BACKEND_URL : 'https://project1-9-xejo.onrender.com';
 
 // Global variables
 let currentAlbums = [];
