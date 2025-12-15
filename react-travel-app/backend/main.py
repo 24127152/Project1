@@ -464,7 +464,7 @@ class ResetPasswordRequest(BaseModel):
 
 @app.post("/api/forgot-password")
 async def forgot_password(request: ForgotPasswordRequest):
-    """Generate reset code for password recovery"""
+    """Generate reset code for password recovery and send via email"""
     try:
         data = load_users()
         users = data.get("users", [])
@@ -479,6 +479,10 @@ async def forgot_password(request: ForgotPasswordRequest):
         
         # Generate 6-digit reset code
         import random
+        import smtplib
+        from email.mime.text import MIMEText
+        from email.mime.multipart import MIMEMultipart
+        
         reset_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
         
         # Store reset code with expiration (10 minutes)
@@ -487,13 +491,69 @@ async def forgot_password(request: ForgotPasswordRequest):
             "expires_at": datetime.now() + timedelta(minutes=10)
         }
         
-        # In production, send email here
-        # For now, return the code in response
-        return {
-            "success": True,
-            "message": "Reset code generated successfully",
-            "reset_code": reset_code  # In production, remove this and send via email
-        }
+        # Send email with reset code
+        try:
+            sender_email = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
+            sender_password = os.getenv('SENDER_PASSWORD', '')
+            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
+            smtp_port = int(os.getenv('SMTP_PORT', 587))
+            
+            # If no email config, just return code for development
+            if not sender_password:
+                return {
+                    "success": True,
+                    "message": "Reset code sent to your email",
+                    "reset_code": reset_code  # For development only
+                }
+            
+            # Create email message
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = 'Password Reset Code - Vietnam UrbanQuest'
+            msg['From'] = sender_email
+            msg['To'] = request.email
+            
+            # Email body
+            text = f"Your password reset code is: {reset_code}\n\nThis code will expire in 10 minutes."
+            html = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                  <h2 style="color: #667eea;">Password Reset Code</h2>
+                  <p>Hello,</p>
+                  <p>You requested to reset your password. Here is your reset code:</p>
+                  <div style="background-color: #667eea; color: white; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
+                    {reset_code}
+                  </div>
+                  <p style="color: #666;">This code will expire in <strong>10 minutes</strong>.</p>
+                  <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
+                </div>
+              </body>
+            </html>
+            """
+            
+            part1 = MIMEText(text, 'plain')
+            part2 = MIMEText(html, 'html')
+            msg.attach(part1)
+            msg.attach(part2)
+            
+            # Send email
+            with smtplib.SMTP(smtp_server, smtp_port) as server:
+                server.starttls()
+                server.login(sender_email, sender_password)
+                server.send_message(msg)
+            
+            return {
+                "success": True,
+                "message": "Reset code sent to your email"
+            }
+        except Exception as email_error:
+            print(f"Email sending error: {email_error}")
+            # Return code in response if email fails (for development)
+            return {
+                "success": True,
+                "message": "Reset code generated (email sending failed)",
+                "reset_code": reset_code
+            }
     except Exception as e:
         print(f"Forgot password error: {e}")
         return {
