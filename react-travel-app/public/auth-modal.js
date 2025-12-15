@@ -1,6 +1,14 @@
 // Authentication Modal System
 // This script enables login/signup modals on any page
 
+// Ensure apiUrl function is available (from api-config.js)
+if (typeof apiUrl === 'undefined') {
+    window.apiUrl = (path) => {
+        const BACKEND_URL = 'https://project1-9-xejo.onrender.com';
+        return BACKEND_URL ? `${BACKEND_URL}${path}` : path;
+    };
+}
+
 // Toggle user menu dropdown
 function toggleUserMenu() {
     const dropdown = document.getElementById('userDropdown');
@@ -407,7 +415,7 @@ async function handleForgotPasswordSubmit(e) {
     if (forgotPasswordStep === 1) {
         // Step 1: Request reset code
         try {
-            const response = await fetch('/api/forgot-password', {
+            const response = await fetch(apiUrl('/api/forgot-password'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email })
@@ -450,7 +458,7 @@ async function handleForgotPasswordSubmit(e) {
         }
 
         try {
-            const response = await fetch('/api/reset-password', {
+            const response = await fetch(apiUrl('/api/reset-password'), {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ email, reset_code: resetCode, new_password: newPassword })
@@ -484,7 +492,7 @@ async function handleLoginSubmit(e) {
     console.log('🔍 Login attempt:', { email, passwordLength: password.length });
 
     try {
-        const response = await fetch('/api/login', {
+        const response = await fetch(apiUrl('/api/login'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ email, password })
@@ -529,7 +537,7 @@ async function handleSignupSubmit(e) {
     }
 
     try {
-        const response = await fetch('/api/register', {
+        const response = await fetch(apiUrl('/api/register'), {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ fullname, email, phone, password })
