@@ -88,7 +88,7 @@ function createAuthModals() {
 
             <!-- Modal Body -->
             <div class="p-6">
-                <p class="text-gray-600 mb-4" data-i18n="forgot_password_instruction">Enter your email address and we'll send you a reset code.</p>
+                <p class="text-gray-600 mb-4" data-i18n="forgot_password_instruction">Enter your email address and we'll send you a reset link.</p>
                 
                 <form id="forgotPasswordForm" class="space-y-4">
                     <div>
@@ -96,35 +96,12 @@ function createAuthModals() {
                         <input type="email" id="forgotEmail" placeholder="your@email.com" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500" required>
                     </div>
                     
-                    <div id="resetCodeSection" class="hidden">
-                        <label class="block text-gray-700 font-semibold mb-2" data-i18n="reset_code">Reset Code</label>
-                        <input type="text" id="resetCode" placeholder="Enter 6-digit code" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                    </div>
-                    
-                    <div id="newPasswordSection" class="hidden">
-                        <label class="block text-gray-700 font-semibold mb-2" data-i18n="new_password">New Password</label>
-                        <div class="relative">
-                            <input type="password" id="newPassword" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <button type="button" onclick="toggleNewPassword()" class="absolute right-3 top-2 text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-eye" id="newPwIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
-                    <div id="confirmNewPasswordSection" class="hidden">
-                        <label class="block text-gray-700 font-semibold mb-2" data-i18n="confirm_new_password">Confirm New Password</label>
-                        <div class="relative">
-                            <input type="password" id="confirmNewPassword" placeholder="••••••••" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500">
-                            <button type="button" onclick="toggleConfirmNewPassword()" class="absolute right-3 top-2 text-gray-500 hover:text-gray-700">
-                                <i class="fas fa-eye" id="confirmNewPwIcon"></i>
-                            </button>
-                        </div>
-                    </div>
-                    
                     <button type="submit" id="forgotPasswordBtn" class="w-full bg-gradient-to-r from-green-600 to-teal-600 hover:from-green-700 hover:to-teal-700 text-white font-bold py-2 rounded-lg transition">
-                        <span data-i18n="send_reset_code">Send Reset Code</span>
+                        <span data-i18n="send_reset_link">Send Reset Link</span>
                     </button>
                 </form>
+
+                <div id="forgotPasswordMessage" class="hidden mt-4 p-4 rounded-lg text-center"></div>
 
                 <div class="text-center mt-4">
                     <button onclick="switchToLogin()" class="text-green-600 hover:text-green-800 font-bold">
@@ -241,12 +218,11 @@ function openForgotPasswordModal() {
 // Reset forgot password form to initial state
 function resetForgotPasswordForm() {
     document.getElementById('forgotPasswordForm')?.reset();
-    document.getElementById('resetCodeSection')?.classList.add('hidden');
-    document.getElementById('newPasswordSection')?.classList.add('hidden');
-    document.getElementById('confirmNewPasswordSection')?.classList.add('hidden');
+    document.getElementById('forgotPasswordMessage')?.classList.add('hidden');
     const btn = document.getElementById('forgotPasswordBtn');
     if (btn) {
-        btn.innerHTML = '<span data-i18n="send_reset_code">Send Reset Code</span>';
+        btn.innerHTML = '<span data-i18n="send_reset_link">Send Reset Link</span>';
+        btn.disabled = false;
     }
     if (window.currentLanguage && window.LanguageManager) {
         window.LanguageManager.updatePageLanguage();
@@ -411,73 +387,41 @@ async function handleForgotPasswordSubmit(e) {
     
     const email = document.getElementById('forgotEmail').value.trim();
     const btn = document.getElementById('forgotPasswordBtn');
+    const messageBox = document.getElementById('forgotPasswordMessage');
     
-    if (forgotPasswordStep === 1) {
-        // Step 1: Request reset code
-        try {
-            const response = await fetch(apiUrl('/api/forgot-password'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email })
-            });
+    btn.disabled = true;
+    messageBox.classList.add('hidden');
+    
+    try {
+        const response = await fetch(apiUrl('/api/forgot-password'), {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email })
+        });
 
-            const data = await response.json();
+        const data = await response.json();
 
-            if (response.ok && data.success) {
-                alert(data.message + '\n\nReset Code: ' + data.reset_code);
-                // Show code and password fields
-                document.getElementById('resetCodeSection').classList.remove('hidden');
-                document.getElementById('newPasswordSection').classList.remove('hidden');
-                document.getElementById('confirmNewPasswordSection').classList.remove('hidden');
-                btn.innerHTML = '<span data-i18n="reset_password_btn">Reset Password</span>';
-                if (window.currentLanguage && window.LanguageManager) {
-                    window.LanguageManager.updatePageLanguage();
-                }
-                forgotPasswordStep = 2;
-            } else {
-                alert(data.message || 'Failed to send reset code');
-            }
-        } catch (error) {
-            console.error('Forgot password error:', error);
-            alert('Server connection error');
+        if (response.ok && data.success) {
+            messageBox.textContent = 'Reset link sent! Redirecting...';
+            messageBox.className = 'show mt-4 p-4 rounded-lg text-center bg-green-100 text-green-800';
+            messageBox.classList.remove('hidden');
+            
+            // Redirect to reset password page after 2 seconds
+            setTimeout(() => {
+                window.location.href = 'reset-password.html?email=' + encodeURIComponent(email);
+            }, 2000);
+        } else {
+            messageBox.textContent = data.message || 'Failed to send reset link';
+            messageBox.className = 'show mt-4 p-4 rounded-lg text-center bg-red-100 text-red-800';
+            messageBox.classList.remove('hidden');
         }
-    } else {
-        // Step 2: Verify code and reset password
-        const resetCode = document.getElementById('resetCode').value.trim();
-        const newPassword = document.getElementById('newPassword').value.trim();
-        const confirmPassword = document.getElementById('confirmNewPassword').value.trim();
-
-        if (newPassword !== confirmPassword) {
-            alert('Passwords do not match');
-            return;
-        }
-
-        if (newPassword.length < 6) {
-            alert('Password must be at least 6 characters');
-            return;
-        }
-
-        try {
-            const response = await fetch(apiUrl('/api/reset-password'), {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ email, reset_code: resetCode, new_password: newPassword })
-            });
-
-            const data = await response.json();
-
-            if (response.ok && data.success) {
-                alert('Password reset successfully! Please login with your new password.');
-                closeAuthModals();
-                forgotPasswordStep = 1;
-                openLoginModal();
-            } else {
-                alert(data.message || 'Password reset failed');
-            }
-        } catch (error) {
-            console.error('Reset password error:', error);
-            alert('Server connection error');
-        }
+    } catch (error) {
+        console.error('Forgot password error:', error);
+        messageBox.textContent = 'Server connection error';
+        messageBox.className = 'show mt-4 p-4 rounded-lg text-center bg-red-100 text-red-800';
+        messageBox.classList.remove('hidden');
+    } finally {
+        btn.disabled = false;
     }
 }
 

@@ -451,20 +451,19 @@ async def logout(username: str = Depends(verify_token)):
         }
 
 # ===== Forgot Password Endpoints =====
-# Store reset codes temporarily (in production, use Redis or database)
-reset_codes_store = {}
+# Store reset tokens temporarily (in production, use Redis or database)
+reset_tokens_store = {}
 
 class ForgotPasswordRequest(BaseModel):
     email: str
 
 class ResetPasswordRequest(BaseModel):
-    email: str
-    reset_code: str
+    token: str
     new_password: str
 
 @app.post("/api/forgot-password")
 async def forgot_password(request: ForgotPasswordRequest):
-    """Generate reset code for password recovery and send via email"""
+    """Generate reset token for password recovery and send via email"""
     try:
         data = load_users()
         users = data.get("users", [])
@@ -477,82 +476,83 @@ async def forgot_password(request: ForgotPasswordRequest):
                 "message": "Email not found"
             }
         
-        # Generate 6-digit reset code
-        import random
-        import smtplib
-        from email.mime.text import MIMEText
-        from email.mime.multipart import MIMEMultipart
+        # Generate JWT token valid for 10 minutes
+        token_payload = {
+            "email": request.email,
+            "type": "password_reset",
+            "exp": datetime.utcnow() + timedelta(minutes=10),
+            "iat": datetime.utcnow()
+        }
+        reset_token = jwt.encode(token_payload, SECRET_KEY, algorithm="HS256")
         
-        reset_code = ''.join([str(random.randint(0, 9)) for _ in range(6)])
-        
-        # Store reset code with expiration (10 minutes)
-        reset_codes_store[request.email] = {
-            "code": reset_code,
+        # Store token
+        reset_tokens_store[request.email] = {
+            "token": reset_token,
             "expires_at": datetime.now() + timedelta(minutes=10)
         }
         
-        # Send email with reset code
+        # Send email with reset link
         try:
-            sender_email = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
-            sender_password = os.getenv('SENDER_PASSWORD', '')
-            smtp_server = os.getenv('SMTP_SERVER', 'smtp.gmail.com')
-            smtp_port = int(os.getenv('SMTP_PORT', 587))
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail
             
-            # If no email config, just return code for development
-            if not sender_password:
+            sendgrid_api_key = os.getenv('SENDGRID_API_KEY', '')
+            
+            # If no SendGrid API key, return token for development
+            if not sendgrid_api_key:
                 return {
                     "success": True,
-                    "message": "Reset code sent to your email",
-                    "reset_code": reset_code  # For development only
+                    "message": "Reset link generated (SendGrid not configured)",
+                    "debug_token": reset_token  # For development only
                 }
             
-            # Create email message
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = 'Password Reset Code - Vietnam UrbanQuest'
-            msg['From'] = sender_email
-            msg['To'] = request.email
+            # Build reset link
+            frontend_url = os.getenv('FRONTEND_URL', 'https://react-travel-a0ajk50ul-dats-projects-a51e6e38.vercel.app')
+            reset_link = f"{frontend_url}/reset-password?token={reset_token}"
             
-            # Email body
-            text = f"Your password reset code is: {reset_code}\n\nThis code will expire in 10 minutes."
-            html = f"""
-            <html>
-              <body style="font-family: Arial, sans-serif;">
-                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                  <h2 style="color: #667eea;">Password Reset Code</h2>
-                  <p>Hello,</p>
-                  <p>You requested to reset your password. Here is your reset code:</p>
-                  <div style="background-color: #667eea; color: white; padding: 15px; border-radius: 5px; text-align: center; font-size: 24px; font-weight: bold; letter-spacing: 5px; margin: 20px 0;">
-                    {reset_code}
-                  </div>
-                  <p style="color: #666;">This code will expire in <strong>10 minutes</strong>.</p>
-                  <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
-                </div>
-              </body>
-            </html>
-            """
+            # Create email
+            message = Mail(
+                from_email='noreply@vietnamurbanquest.com',
+                to_emails=request.email,
+                subject='Password Reset Request - Vietnam UrbanQuest',
+                html_content=f"""
+                <html>
+                  <body style="font-family: Arial, sans-serif;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                      <h2 style="color: #667eea;">Password Reset Request</h2>
+                      <p>Hello,</p>
+                      <p>You requested to reset your password. Click the button below to reset it:</p>
+                      <div style="text-align: center; margin: 30px 0;">
+                        <a href="{reset_link}" style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                          Reset Password
+                        </a>
+                      </div>
+                      <p style="color: #666;">Or copy this link:</p>
+                      <p style="color: #667eea; word-break: break-all;"><a href="{reset_link}">{reset_link}</a></p>
+                      <p style="color: #666;">This link will expire in <strong>10 minutes</strong>.</p>
+                      <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                      <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
+                    </div>
+                  </body>
+                </html>
+                """
+            )
             
-            part1 = MIMEText(text, 'plain')
-            part2 = MIMEText(html, 'html')
-            msg.attach(part1)
-            msg.attach(part2)
-            
-            # Send email
-            with smtplib.SMTP(smtp_server, smtp_port) as server:
-                server.starttls()
-                server.login(sender_email, sender_password)
-                server.send_message(msg)
+            # Send via SendGrid
+            sg = SendGridAPIClient(sendgrid_api_key)
+            sg.send(message)
             
             return {
                 "success": True,
-                "message": "Reset code sent to your email"
+                "message": "Reset link sent to your email"
             }
         except Exception as email_error:
             print(f"Email sending error: {email_error}")
-            # Return code in response if email fails (for development)
+            # Return token in response if email fails (for development)
             return {
                 "success": True,
-                "message": "Reset code generated (email sending failed)",
-                "reset_code": reset_code
+                "message": "Reset link generated (email sending failed)",
+                "debug_token": reset_token
             }
     except Exception as e:
         print(f"Forgot password error: {e}")
@@ -563,37 +563,35 @@ async def forgot_password(request: ForgotPasswordRequest):
 
 @app.post("/api/reset-password")
 async def reset_password(request: ResetPasswordRequest):
-    """Reset password using reset code"""
+    """Reset password using reset token"""
     try:
-        # Check if reset code exists
-        if request.email not in reset_codes_store:
+        # Verify token
+        try:
+            payload = jwt.decode(request.token, SECRET_KEY, algorithms=["HS256"])
+            email = payload.get("email")
+            token_type = payload.get("type")
+            
+            if token_type != "password_reset":
+                return {
+                    "success": False,
+                    "message": "Invalid token type"
+                }
+        except jwt.ExpiredSignatureError:
             return {
                 "success": False,
-                "message": "No reset code found for this email"
+                "message": "Reset link has expired"
             }
-        
-        stored_data = reset_codes_store[request.email]
-        
-        # Check if code expired
-        if datetime.now() > stored_data["expires_at"]:
-            del reset_codes_store[request.email]
+        except jwt.InvalidTokenError:
             return {
                 "success": False,
-                "message": "Reset code has expired"
-            }
-        
-        # Verify reset code
-        if stored_data["code"] != request.reset_code:
-            return {
-                "success": False,
-                "message": "Invalid reset code"
+                "message": "Invalid reset link"
             }
         
         # Update password
         data = load_users()
         users = data.get("users", [])
         
-        user = next((u for u in users if u.get("email") == request.email), None)
+        user = next((u for u in users if u.get("email") == email), None)
         if not user:
             return {
                 "success": False,
@@ -604,8 +602,9 @@ async def reset_password(request: ResetPasswordRequest):
         user["password"] = hash_password(request.new_password)
         save_users(data)
         
-        # Remove used reset code
-        del reset_codes_store[request.email]
+        # Remove token from store
+        if email in reset_tokens_store:
+            del reset_tokens_store[email]
         
         return {
             "success": True,
