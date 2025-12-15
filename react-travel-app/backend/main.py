@@ -493,83 +493,55 @@ async def forgot_password(request: ForgotPasswordRequest):
         
         # Send email with reset link
         try:
-            import smtplib
-            from email.mime.text import MIMEText
-            from email.mime.multipart import MIMEMultipart
+            import httpx
             
-            smtp_host = os.getenv('SMTP_HOST', 'smtp.mailtrap.io')
-            smtp_port = int(os.getenv('SMTP_PORT', 2525))
-            smtp_user = os.getenv('SMTP_USER', '')
-            smtp_password = os.getenv('SMTP_PASSWORD', '')
-            
-            # If no email config, return token for development
-            if not smtp_user or not smtp_password:
-                return {
-                    "success": True,
-                    "message": "Reset link generated (email not configured)",
-                    "debug_token": reset_token  # For development only
-                }
+            # Email service URL
+            email_service_url = os.getenv('EMAIL_SERVICE_URL', 'http://localhost:3001')
             
             # Build reset link
             frontend_url = os.getenv('FRONTEND_URL', 'https://react-travel-a0ajk50ul-dats-projects-a51e6e38.vercel.app')
             reset_link = f"{frontend_url}/reset-password?token={reset_token}"
             
-            # Create email
-            msg = MIMEMultipart('alternative')
-            msg['Subject'] = 'Password Reset Request - Vietnam UrbanQuest'
-            msg['From'] = 'noreply@vietnamurbanquest.com'
-            msg['To'] = request.email
-            
-            # Email body
-            html = f"""
-            <html>
-              <body style="font-family: Arial, sans-serif;">
-                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                  <h2 style="color: #667eea;">Password Reset Request</h2>
-                  <p>Hello,</p>
-                  <p>You requested to reset your password. Click the button below to reset it:</p>
-                  <div style="text-align: center; margin: 30px 0;">
-                    <a href="{reset_link}" style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-                      Reset Password
-                    </a>
-                  </div>
-                  <p style="color: #666;">Or copy this link:</p>
-                  <p style="color: #667eea; word-break: break-all;"><a href="{reset_link}">{reset_link}</a></p>
-                  <p style="color: #666;">This link will expire in <strong>10 minutes</strong>.</p>
-                  <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                  <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
-                </div>
-              </body>
-            </html>
-            """
-            
-            part = MIMEText(html, 'html')
-            msg.attach(part)
-            
-            # Send via SMTP
-            with smtplib.SMTP(smtp_host, smtp_port) as server:
-                server.starttls()
-                server.login(smtp_user, smtp_password)
-                server.send_message(msg)
-            
+            # Call email service
+            try:
+                async with httpx.AsyncClient(timeout=10) as client:
+                    response = await client.post(
+                        f"{email_service_url}/send-reset-password-email",
+                        json={
+                            "email": request.email,
+                            "reset_link": reset_link
+                        }
+                    )
+                    
+                    email_result = response.json()
+                    
+                    if response.status_code == 200 and email_result.get("success"):
+                        return {
+                            "success": True,
+                            "message": "Reset link sent to your email"
+                        }
+                    else:
+                        print(f"Email service error: {email_result}")
+                        # Return token in response if email fails
+                        return {
+                            "success": True,
+                            "message": "Reset link generated (email service unavailable)",
+                            "debug_token": reset_token
+                        }
+            except Exception as email_error:
+                print(f"Email service call error: {email_error}")
+                # Return token in response if email service is down
+                return {
+                    "success": True,
+                    "message": "Reset link generated (email service unavailable)",
+                    "debug_token": reset_token
+                }
+        except Exception as e:
+            print(f"Forgot password error: {e}")
             return {
-                "success": True,
-                "message": "Reset link sent to your email"
+                "success": False,
+                "message": f"Server error: {str(e)}"
             }
-        except Exception as email_error:
-            print(f"Email sending error: {email_error}")
-            # Return token in response if email fails (for development)
-            return {
-                "success": True,
-                "message": "Reset link generated (email sending failed)",
-                "debug_token": reset_token
-            }
-    except Exception as e:
-        print(f"Forgot password error: {e}")
-        return {
-            "success": False,
-            "message": f"Server error: {str(e)}"
-        }
 
 @app.post("/api/reset-password")
 async def reset_password(request: ResetPasswordRequest):
