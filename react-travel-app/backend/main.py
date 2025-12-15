@@ -12,6 +12,19 @@ from PIL import Image
 import os
 import hashlib
 import jwt
+from flask_mailman import Mail, Message
+from flask import Flask
+
+# Create a minimal Flask app for Mail support
+mail_app = Flask(__name__)
+mail_app.config['MAIL_SERVER'] = os.getenv('SMTP_HOST', 'smtp.mailtrap.io')
+mail_app.config['MAIL_PORT'] = int(os.getenv('SMTP_PORT', 2525))
+mail_app.config['MAIL_USE_TLS'] = True
+mail_app.config['MAIL_USERNAME'] = os.getenv('SMTP_USER', '')
+mail_app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD', '')
+mail_app.config['MAIL_DEFAULT_SENDER'] = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
+
+mail = Mail(mail_app)
 
 # Import our modules
 try:
@@ -493,54 +506,82 @@ async def forgot_password(request: ForgotPasswordRequest):
         
         # Send email with reset link
         try:
-            import httpx
-            
-            # Email service URL
-            email_service_url = os.getenv('EMAIL_SERVICE_URL', 'http://localhost:3001')
-            
             # Build reset link
             frontend_url = os.getenv('FRONTEND_URL', 'https://react-travel-a0ajk50ul-dats-projects-a51e6e38.vercel.app')
             reset_link = f"{frontend_url}/reset-password?token={reset_token}"
             
-            # Call email service
-            try:
-                async with httpx.AsyncClient(timeout=10) as client:
-                    response = await client.post(
-                        f"{email_service_url}/send-reset-password-email",
-                        json={
-                            "email": request.email,
-                            "reset_link": reset_link
-                        }
-                    )
-                    
-                    email_result = response.json()
-                    
-                    if response.status_code == 200 and email_result.get("success"):
-                        return {
-                            "success": True,
-                            "message": "Reset link sent to your email"
-                        }
-                    else:
-                        print(f"Email service error: {email_result}")
-                        # Return token in response if email fails
-                        return {
-                            "success": True,
-                            "message": "Reset link generated (email service unavailable)",
-                            "debug_token": reset_token
-                        }
-            except Exception as email_error:
-                print(f"Email service call error: {email_error}")
-                # Return token in response if email service is down
-                return {
-                    "success": True,
-                    "message": "Reset link generated (email service unavailable)",
-                    "debug_token": reset_token
-                }
-        except Exception as e:
-            print(f"Forgot password error: {e}")
+            # Prepare email HTML
+            html_body = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif; background-color: #f5f5f5;">
+                <div style="max-width: 600px; margin: 20px auto; background-color: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                  <div style="text-align: center; margin-bottom: 30px;">
+                    <h1 style="color: #667eea; margin: 0;">Vietnam UrbanQuest</h1>
+                    <p style="color: #666; margin: 10px 0 0 0;">Password Reset Request</p>
+                  </div>
+                  
+                  <p style="color: #333; font-size: 16px; line-height: 1.6;">Hello,</p>
+                  
+                  <p style="color: #333; font-size: 16px; line-height: 1.6;">
+                    We received a request to reset your password. Click the button below to proceed:
+                  </p>
+                  
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_link}" style="background-color: #667eea; color: white; padding: 14px 40px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block; font-size: 16px;">
+                      Reset Password
+                    </a>
+                  </div>
+                  
+                  <p style="color: #666; font-size: 14px; line-height: 1.6;">
+                    Or copy and paste this link in your browser:
+                  </p>
+                  
+                  <p style="color: #667eea; font-size: 13px; word-break: break-all; background-color: #f9f9f9; padding: 10px; border-radius: 4px;">
+                    <a href="{reset_link}" style="color: #667eea; text-decoration: none;">
+                      {reset_link}
+                    </a>
+                  </p>
+                  
+                  <hr style="border: none; border-top: 1px solid #eee; margin: 25px 0;">
+                  
+                  <p style="color: #999; font-size: 13px; line-height: 1.6;">
+                    This password reset link will expire in <strong>10 minutes</strong>. If you did not request a password reset, please ignore this email and your password will remain unchanged.
+                  </p>
+                  
+                  <p style="color: #999; font-size: 13px; line-height: 1.6;">
+                    If you have any questions, please contact our support team.
+                  </p>
+                  
+                  <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px; text-align: center;">
+                    <p style="color: #999; font-size: 12px; margin: 0;">
+                      © 2025 Vietnam UrbanQuest. All rights reserved.
+                    </p>
+                  </div>
+                </div>
+              </body>
+            </html>
+            """
+            
+            # Send email using Flask-Mailman
+            with mail_app.app_context():
+                msg = Message(
+                    subject='Password Reset Request - Vietnam UrbanQuest',
+                    recipients=[request.email],
+                    html=html_body
+                )
+                mail.send(msg)
+            
             return {
-                "success": False,
-                "message": f"Server error: {str(e)}"
+                "success": True,
+                "message": "Reset link sent to your email"
+            }
+        except Exception as email_error:
+            print(f"Email sending error: {email_error}")
+            # Return token in response if email fails (for development)
+            return {
+                "success": True,
+                "message": "Reset link generated (email sending failed)",
+                "debug_token": reset_token
             }
     except Exception as e:
         print(f"Forgot password error: {e}")
