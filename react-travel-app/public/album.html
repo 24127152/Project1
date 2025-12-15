@@ -532,14 +532,14 @@
                     return;
                 }
                 
-                const createResponse = await fetch('/api/albums', {
+                const createResponse = await fetch(apiUrl('/api/albums', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
                     body: JSON.stringify({ name: albumName })
-                });
+                }));
 
                 const createData = await createResponse.json();
                 if (!createData.success) {
@@ -560,13 +560,13 @@
 
                     try {
                         const encodedAlbumName = encodeURIComponent(albumName);
-                        const response = await fetch(`/api/albums/${encodedAlbumName}/images`, {
+                        const response = await fetch(apiUrl(`/api/albums/${encodedAlbumName}/images`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             },
                             body: formData
-                        });
+                        }));
 
                         const result = await response.json();
                         if (result.success) {
@@ -608,7 +608,7 @@
                 document.getElementById('empty-albums').classList.add('hidden');
                 document.getElementById('album-stats').classList.add('hidden');
 
-                const response = await fetch('/api/albums', {
+                const response = await fetch(apiUrl('/api/albums'), {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -620,7 +620,7 @@
                     displayAlbums(data.albums);
                     
                     // Get and display statistics
-                    const statsResponse = await fetch('/api/albums/stats', {
+                    const statsResponse = await fetch(apiUrl('/api/albums/stats'), {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -715,11 +715,11 @@
             try {
                 const token = localStorage.getItem('authToken');
                 const encodedAlbumName = encodeURIComponent(albumName);
-                const response = await fetch(`/api/albums/${encodedAlbumName}/images`, {
+                const response = await fetch(apiUrl(`/api/albums/${encodedAlbumName}/images`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
-                });
+                }));
                 const data = await response.json();
                 
                 if (data.success) {
@@ -885,7 +885,7 @@
                 const encodedAlbumName = encodeURIComponent(albumName);
                 const encodedFilename = encodeURIComponent(filename);
                 
-                const response = await fetch(`/api/albums/${encodedAlbumName}/images/${encodedFilename}`, {
+                const response = await fetch(apiUrl(`/api/albums/${encodedAlbumName}/images/${encodedFilename}`), {
                     method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -922,7 +922,7 @@
             try {
                 const token = localStorage.getItem('authToken');
                 const encodedAlbumName = encodeURIComponent(albumName);
-                const response = await fetch(`/api/albums/${encodedAlbumName}/download`, {
+                const response = await fetch(apiUrl(`/api/albums/${encodedAlbumName}/download`), {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -958,7 +958,7 @@
                     const token = localStorage.getItem('authToken');
                     // Encode album name properly for URL
                     const encodedAlbumName = encodeURIComponent(albumName);
-                    const response = await fetch(`/api/albums/${encodedAlbumName}`, {
+                    const response = await fetch(apiUrl(`/api/albums/${encodedAlbumName}`), {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -1124,13 +1124,13 @@
 
                     try {
                         const encodedAlbumName = encodeURIComponent(addImagesToAlbumName);
-                        const response = await fetch(`/api/albums/${encodedAlbumName}/images`, {
+                        const response = await fetch(apiUrl(`/api/albums/${encodedAlbumName}/images`, {
                             method: 'POST',
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             },
                             body: formData
-                        });
+                        }));
 
                         const result = await response.json();
                         if (result.success) {
@@ -1239,7 +1239,7 @@
                     updateProgress(0, 2, 'Creating album for scanned image...');
                     
                     // Create album
-                    const createResponse = await fetch('/api/albums', {
+                    const createResponse = await fetch(apiUrl('/api/albums'), {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -1270,7 +1270,7 @@
                     console.log('[SCAN TO ALBUM] Uploading to album:', albumName);
                     console.log('[SCAN TO ALBUM] Encoded album name:', encodedAlbumName);
                     
-                    const uploadResponse = await fetch(`/api/albums/${encodedAlbumName}/images`, {
+                    const uploadResponse = await fetch(apiUrl(`/api/albums/${encodedAlbumName}/images`), {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
