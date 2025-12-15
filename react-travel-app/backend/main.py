@@ -542,6 +542,12 @@ async def forgot_password(request: ForgotPasswordRequest):
                 "success": False,
                 "message": f"Server error: {str(e)}"
             }
+    except Exception as e:
+        print(f"Forgot password error: {e}")
+        return {
+            "success": False,
+            "message": f"Server error: {str(e)}"
+        }
 
 @app.post("/api/reset-password")
 async def reset_password(request: ResetPasswordRequest):
