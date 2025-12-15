@@ -12,9 +12,8 @@ from PIL import Image
 import os
 import hashlib
 import jwt
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import Mail
 
 # Import our modules
 try:
@@ -552,40 +551,43 @@ async def forgot_password(request: ForgotPasswordRequest):
             </html>
             """
             
-            # Send email using smtplib
+            # Send email using SendGrid API
             try:
-                smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
-                smtp_port = int(os.getenv('SMTP_PORT', 587))
-                smtp_user = os.getenv('SMTP_USER', '')
-                smtp_password = os.getenv('SMTP_PASSWORD', '')
+                sendgrid_api_key = os.getenv('SENDGRID_API_KEY', '')
                 sender_email = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
                 
-                # If no credentials, return debug token
-                if not smtp_user or not smtp_password:
+                # If no API key, return debug token
+                if not sendgrid_api_key:
                     return {
                         "success": True,
                         "message": "Reset link generated (email not configured)",
                         "debug_token": reset_token
                     }
                 
-                # Create email
-                msg = MIMEMultipart('alternative')
-                msg['Subject'] = 'Password Reset Request - Vietnam UrbanQuest'
-                msg['From'] = sender_email
-                msg['To'] = request.email
+                # Create email message
+                message = Mail(
+                    from_email=sender_email,
+                    to_emails=request.email,
+                    subject='Password Reset Request - Vietnam UrbanQuest',
+                    html_content=html_body
+                )
                 
-                msg.attach(MIMEText(html_body, 'html'))
+                # Send via SendGrid API
+                sg = SendGridAPIClient(sendgrid_api_key)
+                response = sg.send(message)
                 
-                # Send via SMTP
-                with smtplib.SMTP(smtp_host, smtp_port) as server:
-                    server.starttls()
-                    server.login(smtp_user, smtp_password)
-                    server.send_message(msg)
-                
-                return {
-                    "success": True,
-                    "message": "Reset link sent to your email"
-                }
+                if response.status_code in [200, 201, 202]:
+                    return {
+                        "success": True,
+                        "message": "Reset link sent to your email"
+                    }
+                else:
+                    print(f"SendGrid error: Status {response.status_code}")
+                    return {
+                        "success": True,
+                        "message": "Reset link generated (email sending failed)",
+                        "debug_token": reset_token
+                    }
             except Exception as email_error:
                 print(f"Email sending error: {email_error}")
                 # Return token in response if email fails
