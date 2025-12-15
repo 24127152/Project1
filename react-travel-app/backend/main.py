@@ -12,8 +12,7 @@ from PIL import Image
 import os
 import hashlib
 import jwt
-from sendgrid import SendGridAPIClient
-from sendgrid.helpers.mail import Mail
+import resend
 
 # Import our modules
 try:
@@ -551,43 +550,36 @@ async def forgot_password(request: ForgotPasswordRequest):
             </html>
             """
             
-            # Send email using SendGrid API
+            # Send email using Resend API
             try:
-                sendgrid_api_key = os.getenv('SENDGRID_API_KEY', '')
-                sender_email = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
+                resend_api_key = os.getenv('RESEND_API_KEY', '')
+                sender_email = os.getenv('SENDER_EMAIL', 'onboarding@resend.dev')
                 
                 # If no API key, return debug token
-                if not sendgrid_api_key:
+                if not resend_api_key:
                     return {
                         "success": True,
                         "message": "Reset link generated (email not configured)",
                         "debug_token": reset_token
                     }
                 
-                # Create email message
-                message = Mail(
-                    from_email=sender_email,
-                    to_emails=request.email,
-                    subject='Password Reset Request - Vietnam UrbanQuest',
-                    html_content=html_body
-                )
+                # Configure Resend
+                resend.api_key = resend_api_key
                 
-                # Send via SendGrid API
-                sg = SendGridAPIClient(sendgrid_api_key)
-                response = sg.send(message)
+                # Send email
+                params = {
+                    "from": sender_email,
+                    "to": [request.email],
+                    "subject": "Password Reset Request - Vietnam UrbanQuest",
+                    "html": html_body
+                }
                 
-                if response.status_code in [200, 201, 202]:
-                    return {
-                        "success": True,
-                        "message": "Reset link sent to your email"
-                    }
-                else:
-                    print(f"SendGrid error: Status {response.status_code}")
-                    return {
-                        "success": True,
-                        "message": "Reset link generated (email sending failed)",
-                        "debug_token": reset_token
-                    }
+                email = resend.Emails.send(params)
+                
+                return {
+                    "success": True,
+                    "message": "Reset link sent to your email"
+                }
             except Exception as email_error:
                 print(f"Email sending error: {email_error}")
                 # Return token in response if email fails
