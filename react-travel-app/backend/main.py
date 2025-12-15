@@ -564,11 +564,8 @@ async def forgot_password(request: ForgotPasswordRequest):
             
             # Send email using Flask-Mailman
             with mail_app.app_context():
-                msg = message.Message(
-                    'Password Reset Request - Vietnam UrbanQuest',
-                    body=html_body,
-                    html=html_body
-                )
+                msg = message.Message('Password Reset Request - Vietnam UrbanQuest')
+                msg.html = html_body
                 msg.add_recipient(request.email)
                 mail.send(msg)
             
