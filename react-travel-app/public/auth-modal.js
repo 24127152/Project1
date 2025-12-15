@@ -402,14 +402,21 @@ async function handleForgotPasswordSubmit(e) {
         const data = await response.json();
 
         if (response.ok && data.success) {
-            messageBox.textContent = 'Reset link sent! Redirecting...';
-            messageBox.className = 'show mt-4 p-4 rounded-lg text-center bg-green-100 text-green-800';
+            // Check if we got a debug token (email sending failed)
+            if (data.debug_token) {
+                messageBox.innerHTML = `⚠️ Email service unavailable.<br><br>
+                    <strong>Debug Link:</strong><br>
+                    <a href="reset-password.html?token=${data.debug_token}" class="text-blue-600 underline break-all" target="_blank">
+                        Click here to reset password
+                    </a><br><br>
+                    <small class="text-gray-600">In production, you would receive this link via email.</small>`;
+                messageBox.className = 'show mt-4 p-4 rounded-lg text-left bg-yellow-100 text-yellow-900 text-sm';
+            } else {
+                messageBox.innerHTML = `✅ <strong>Reset link sent to your email!</strong><br>
+                    <small class="text-gray-600">Check your inbox and click the link to reset your password.</small>`;
+                messageBox.className = 'show mt-4 p-4 rounded-lg text-center bg-green-100 text-green-800';
+            }
             messageBox.classList.remove('hidden');
-            
-            // Redirect to reset password page after 2 seconds
-            setTimeout(() => {
-                window.location.href = 'reset-password.html?email=' + encodeURIComponent(email);
-            }, 2000);
         } else {
             messageBox.textContent = data.message || 'Failed to send reset link';
             messageBox.className = 'show mt-4 p-4 rounded-lg text-center bg-red-100 text-red-800';
