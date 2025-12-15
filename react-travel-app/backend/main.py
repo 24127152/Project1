@@ -493,16 +493,20 @@ async def forgot_password(request: ForgotPasswordRequest):
         
         # Send email with reset link
         try:
-            from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail
+            import smtplib
+            from email.mime.text import MIMEText
+            from email.mime.multipart import MIMEMultipart
             
-            sendgrid_api_key = os.getenv('SENDGRID_API_KEY', '')
+            smtp_host = os.getenv('SMTP_HOST', 'smtp.mailtrap.io')
+            smtp_port = int(os.getenv('SMTP_PORT', 2525))
+            smtp_user = os.getenv('SMTP_USER', '')
+            smtp_password = os.getenv('SMTP_PASSWORD', '')
             
-            # If no SendGrid API key, return token for development
-            if not sendgrid_api_key:
+            # If no email config, return token for development
+            if not smtp_user or not smtp_password:
                 return {
                     "success": True,
-                    "message": "Reset link generated (SendGrid not configured)",
+                    "message": "Reset link generated (email not configured)",
                     "debug_token": reset_token  # For development only
                 }
             
@@ -511,36 +515,42 @@ async def forgot_password(request: ForgotPasswordRequest):
             reset_link = f"{frontend_url}/reset-password?token={reset_token}"
             
             # Create email
-            message = Mail(
-                from_email='noreply@vietnamurbanquest.com',
-                to_emails=request.email,
-                subject='Password Reset Request - Vietnam UrbanQuest',
-                html_content=f"""
-                <html>
-                  <body style="font-family: Arial, sans-serif;">
-                    <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
-                      <h2 style="color: #667eea;">Password Reset Request</h2>
-                      <p>Hello,</p>
-                      <p>You requested to reset your password. Click the button below to reset it:</p>
-                      <div style="text-align: center; margin: 30px 0;">
-                        <a href="{reset_link}" style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
-                          Reset Password
-                        </a>
-                      </div>
-                      <p style="color: #666;">Or copy this link:</p>
-                      <p style="color: #667eea; word-break: break-all;"><a href="{reset_link}">{reset_link}</a></p>
-                      <p style="color: #666;">This link will expire in <strong>10 minutes</strong>.</p>
-                      <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
-                      <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
-                    </div>
-                  </body>
-                </html>
-                """
-            )
+            msg = MIMEMultipart('alternative')
+            msg['Subject'] = 'Password Reset Request - Vietnam UrbanQuest'
+            msg['From'] = 'noreply@vietnamurbanquest.com'
+            msg['To'] = request.email
             
-            # Send via SendGrid
-            sg = SendGridAPIClient(sendgrid_api_key)
-            sg.send(message)
+            # Email body
+            html = f"""
+            <html>
+              <body style="font-family: Arial, sans-serif;">
+                <div style="max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #ddd; border-radius: 5px;">
+                  <h2 style="color: #667eea;">Password Reset Request</h2>
+                  <p>Hello,</p>
+                  <p>You requested to reset your password. Click the button below to reset it:</p>
+                  <div style="text-align: center; margin: 30px 0;">
+                    <a href="{reset_link}" style="background-color: #667eea; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">
+                      Reset Password
+                    </a>
+                  </div>
+                  <p style="color: #666;">Or copy this link:</p>
+                  <p style="color: #667eea; word-break: break-all;"><a href="{reset_link}">{reset_link}</a></p>
+                  <p style="color: #666;">This link will expire in <strong>10 minutes</strong>.</p>
+                  <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
+                  <p style="color: #999; font-size: 12px;">If you did not request a password reset, please ignore this email.</p>
+                </div>
+              </body>
+            </html>
+            """
+            
+            part = MIMEText(html, 'html')
+            msg.attach(part)
+            
+            # Send via SMTP
+            with smtplib.SMTP(smtp_host, smtp_port) as server:
+                server.starttls()
+                server.login(smtp_user, smtp_password)
+                server.send_message(msg)
             
             return {
                 "success": True,
