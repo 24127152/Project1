@@ -12,7 +12,7 @@ from PIL import Image
 import os
 import hashlib
 import jwt
-from flask_mailman import Mail, Message
+from flask_mailman import Mail, message
 from flask import Flask
 
 # Create a minimal Flask app for Mail support
@@ -564,7 +564,7 @@ async def forgot_password(request: ForgotPasswordRequest):
             
             # Send email using Flask-Mailman
             with mail_app.app_context():
-                msg = Message(
+                msg = message.Message(
                     subject='Password Reset Request - Vietnam UrbanQuest',
                     recipients=[request.email],
                     html=html_body
