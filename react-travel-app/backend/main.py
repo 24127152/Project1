@@ -12,19 +12,9 @@ from PIL import Image
 import os
 import hashlib
 import jwt
-from flask_mailman import Mail, message
-from flask import Flask
-
-# Create a minimal Flask app for Mail support
-mail_app = Flask(__name__)
-mail_app.config['MAIL_SERVER'] = os.getenv('SMTP_HOST', 'smtp.mailtrap.io')
-mail_app.config['MAIL_PORT'] = int(os.getenv('SMTP_PORT', 2525))
-mail_app.config['MAIL_USE_TLS'] = True
-mail_app.config['MAIL_USERNAME'] = os.getenv('SMTP_USER', '')
-mail_app.config['MAIL_PASSWORD'] = os.getenv('SMTP_PASSWORD', '')
-mail_app.config['MAIL_DEFAULT_SENDER'] = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
-
-mail = Mail(mail_app)
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
 
 # Import our modules
 try:
@@ -562,12 +552,48 @@ async def forgot_password(request: ForgotPasswordRequest):
             </html>
             """
             
-            # Send email using Flask-Mailman
-            with mail_app.app_context():
-                msg = message.Message('Password Reset Request - Vietnam UrbanQuest')
-                msg.html = html_body
-                msg.add_recipient(request.email)
-                mail.send(msg)
+            # Send email using smtplib
+            try:
+                smtp_host = os.getenv('SMTP_HOST', 'smtp.gmail.com')
+                smtp_port = int(os.getenv('SMTP_PORT', 587))
+                smtp_user = os.getenv('SMTP_USER', '')
+                smtp_password = os.getenv('SMTP_PASSWORD', '')
+                sender_email = os.getenv('SENDER_EMAIL', 'noreply@vietnamurbanquest.com')
+                
+                # If no credentials, return debug token
+                if not smtp_user or not smtp_password:
+                    return {
+                        "success": True,
+                        "message": "Reset link generated (email not configured)",
+                        "debug_token": reset_token
+                    }
+                
+                # Create email
+                msg = MIMEMultipart('alternative')
+                msg['Subject'] = 'Password Reset Request - Vietnam UrbanQuest'
+                msg['From'] = sender_email
+                msg['To'] = request.email
+                
+                msg.attach(MIMEText(html_body, 'html'))
+                
+                # Send via SMTP
+                with smtplib.SMTP(smtp_host, smtp_port) as server:
+                    server.starttls()
+                    server.login(smtp_user, smtp_password)
+                    server.send_message(msg)
+                
+                return {
+                    "success": True,
+                    "message": "Reset link sent to your email"
+                }
+            except Exception as email_error:
+                print(f"Email sending error: {email_error}")
+                # Return token in response if email fails
+                return {
+                    "success": True,
+                    "message": "Reset link generated (email sending failed)",
+                    "debug_token": reset_token
+                }
             
             return {
                 "success": True,
