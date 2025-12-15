@@ -307,7 +307,7 @@
         function apiUrl(path) {
             const backendUrl = (typeof BACKEND_URL !== 'undefined' && BACKEND_URL) 
                 ? BACKEND_URL 
-                : 'https://project1-1-4ran.onrender.com';
+                : 'https://project1-9-xejo.onrender.com';
             return backendUrl ? `${backendUrl}${path}` : path;
         }
 
@@ -444,7 +444,7 @@
         // Load popular destinations on page load
         async function loadPopularDestinations() {
             try {
-                const response = await fetch('/api/destinations/popular');
+                const response = await fetch(apiUrl('/api/destinations/popular'));
                 const data = await response.json();
                 
                 if (data.success && data.destinations) {
@@ -471,7 +471,7 @@
 
             try {
                 if (isFavorited) {
-                    const response = await fetch(`/api/favorites/${encodeURIComponent(destinationName)}`, {
+                    const response = await fetch(apiUrl(`/api/favorites/${encodeURIComponent(destinationName)}`), {
                         method: 'DELETE',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -481,7 +481,7 @@
                         icon.classList.add('far');
                     }
                 } else {
-                    const response = await fetch(`/api/favorites/${encodeURIComponent(destinationName)}`, {
+                    const response = await fetch(apiUrl(`/api/favorites/${encodeURIComponent(destinationName)}`), {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
@@ -503,7 +503,7 @@
             if (!token) return;
 
             try {
-                const response = await fetch('/api/favorites', {
+                const response = await fetch(apiUrl('/api/favorites'), {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
                 const data = await response.json();
@@ -732,7 +732,7 @@
         async function loadDistrictsFromCSV() {
             try {
                 console.log('🔄 Loading districts...');
-                const response = await fetch('/api/districts');
+                const response = await fetch(apiUrl('/api/districts'));
                 console.log('📡 Response status:', response.status);
                 
                 const data = await response.json();
@@ -809,7 +809,7 @@
             try {
                 if (isFavorited) {
                     // Remove from favorites
-                    const response = await fetch(`/api/favorites/${encodeURIComponent(destinationName)}`, {
+                    const response = await fetch(apiUrl(`/api/favorites/${encodeURIComponent(destinationName)}`), {
                         method: 'DELETE',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -822,7 +822,7 @@
                     }
                 } else {
                     // Add to favorites
-                    const response = await fetch(`/api/favorites/${encodeURIComponent(destinationName)}`, {
+                    const response = await fetch(apiUrl(`/api/favorites/${encodeURIComponent(destinationName)}`), {
                         method: 'POST',
                         headers: {
                             'Authorization': `Bearer ${token}`
@@ -846,7 +846,7 @@
             if (!token) return;
 
             try {
-                const response = await fetch('/api/favorites', {
+                const response = await fetch(apiUrl('/api/favorites'), {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
