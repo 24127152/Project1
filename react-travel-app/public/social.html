@@ -186,8 +186,8 @@
         </div>
     </footer>
 
+    <script src="api-config.js"></script>
     <script>
-        const API_URL = '';
         let currentOffset = 0;
         const postsPerPage = 10;
 
@@ -280,7 +280,7 @@
                     return;
                 }
                 
-                const response = await fetch(`${API_URL}/api/social/posts`, {
+                const response = await fetch(apiUrl('/api/social/posts'), {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -312,7 +312,7 @@
 
         async function loadPosts(append = false) {
             try {
-                const response = await fetch(`${API_URL}/api/social/posts?limit=${postsPerPage}&offset=${currentOffset}`, {
+                const response = await fetch(apiUrl(`/api/social/posts?limit=${postsPerPage}&offset=${currentOffset}`), {
                     headers: getAuthHeader()
                 });
                 
@@ -439,7 +439,7 @@
 
         async function toggleLike(postId) {
             try {
-                const response = await fetch(`${API_URL}/api/social/posts/${postId}/like`, {
+                const response = await fetch(apiUrl(`/api/social/posts/${postId}/like`), {
                     method: 'POST',
                     headers: getAuthHeader()
                 });
@@ -466,7 +466,7 @@
 
         async function loadComments(postId) {
             try {
-                const response = await fetch(`${API_URL}/api/social/posts/${postId}/comments`);
+                const response = await fetch(apiUrl(`/api/social/posts/${postId}/comments`));
                 const data = await response.json();
                 
                 if (data.success) {
@@ -525,7 +525,7 @@
                     formData.append('user_fullname', userName);
                 }
                 
-                const response = await fetch(`${API_URL}/api/social/posts/${postId}/comments`, {
+                const response = await fetch(apiUrl(`/api/social/posts/${postId}/comments`), {
                     method: 'POST',
                     headers: getAuthHeader(),
                     body: formData
@@ -547,7 +547,7 @@
             if (!confirm('Are you sure you want to delete this post?')) return;
             
             try {
-                const response = await fetch(`${API_URL}/api/social/posts/${postId}`, {
+                const response = await fetch(apiUrl(`/api/social/posts/${postId}`), {
                     method: 'DELETE',
                     headers: getAuthHeader()
                 });
